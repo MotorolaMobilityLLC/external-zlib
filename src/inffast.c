@@ -253,66 +253,30 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                             from = out - dist;  /* rest from output */
                         }
                     }
-#if defined(USE_INFFAST_OPTIMIZATION)
-                    //if ( len > 16 && (dist == 1) )
-                    if ((len > 16) && (out - from == 1)) {
-#ifndef POSTINC  
-                        from = from + 1;
-                        out = out + 1;
-#endif
-                        memset(out, *from, len);
-                        from += len;
-                        out += len;
-
-#ifndef POSTINC
-                        from = from - 1;
-                        out =  out - 1;
-#endif
-                    } else
-#endif
-                    {
-                        while (len > 2) {
+                    while (len > 2) {
+                        PUP(out) = PUP(from);
+                        PUP(out) = PUP(from);
+                        PUP(out) = PUP(from);
+                        len -= 3;
+                    }
+                    if (len) {
+                        PUP(out) = PUP(from);
+                        if (len > 1)
                             PUP(out) = PUP(from);
-                            PUP(out) = PUP(from);
-                            PUP(out) = PUP(from);
-                            len -= 3;
-                        }
-                        if (len) {
-                            PUP(out) = PUP(from);
-                            if (len > 1)
-                                PUP(out) = PUP(from);
-                        }
                     }
                 }
                 else {
                     from = out - dist;          /* copy direct from output */
-#if defined(USE_INFFAST_OPTIMIZATION)
-                    if ( len > 16 && (dist == 1) ) {
-#ifndef POSTINC  
-                        from = from + 1;
-                        out = out + 1;
-#endif
-                        memset(out, *from, len);
-                        from += len;
-                        out += len;
-#ifndef POSTINC
-                        from = from - 1;
-                        out =  out - 1;
-#endif
-                    } else
-#endif
-                    {
-                        do {                        /* minimum length is three */
+                    do {                        /* minimum length is three */
+                        PUP(out) = PUP(from);
+                        PUP(out) = PUP(from);
+                        PUP(out) = PUP(from);
+                        len -= 3;
+                    } while (len > 2);
+                    if (len) {
+                        PUP(out) = PUP(from);
+                        if (len > 1)
                             PUP(out) = PUP(from);
-                            PUP(out) = PUP(from);
-                            PUP(out) = PUP(from);
-                            len -= 3;
-                        } while (len > 2);
-                        if (len) {
-                            PUP(out) = PUP(from);
-                            if (len > 1)
-                                PUP(out) = PUP(from);
-                        }
                     }
                 }
             }
