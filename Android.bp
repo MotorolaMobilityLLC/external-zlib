@@ -59,6 +59,71 @@ cc_library {
     },
 }
 
+// libunz used to be an unzip-only subset of libz. Only host-side tools were
+// taking advantage of it, though, and it's not a notion supported by zlib
+// itself. This caused trouble during the 1.2.6 upgrade because libunz ended
+// up needing to drag in most of the other files anyway. So this is a first
+// step towards killing libunz. If you're reading this in the K release or
+// later, please see if you can get a bit further in removing libunz...
+cc_library {
+    name: "libunz",
+
+    host_supported: true,
+
+    cflags: [
+        "-O3",
+        "-DUSE_MMAP",
+        "-DZLIB_CONST",
+        "-Wall",
+        "-Werror",
+    ],
+    stl: "none",
+    export_include_dirs: ["."],
+    srcs: [
+        "src/adler32.c",
+        "src/compress.c",
+        "src/crc32.c",
+        "src/deflate.c",
+        "src/gzclose.c",
+        "src/gzlib.c",
+        "src/gzread.c",
+        "src/gzwrite.c",
+        "src/infback.c",
+        "src/inflate.c",
+        "src/inftrees.c",
+        "src/inffast.c",
+        "src/trees.c",
+        "src/uncompr.c",
+        "src/zutil.c",
+    ],
+
+    arch: {
+        arm: {
+            // measurements show that the ARM version of ZLib is about x1.17 faster
+            // than the thumb one...
+            instruction_set: "arm",
+
+            // TODO: This is to work around b/24465209. Remove after root cause is fixed
+            ldflags: ["-Wl,--hash-style=both"],
+        },
+    },
+
+    target: {
+        host: {
+            shared: {
+                // The host shared library is built as libz-host
+                enabled: false,
+            },
+        },
+        linux_bionic: {
+            enabled: true,
+        },
+        windows: {
+            enabled: true,
+        },
+    },
+}
+
 cc_binary_host {
     name: "minigzip",
     srcs: ["src/test/minigzip.c"],
