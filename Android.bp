@@ -70,6 +70,13 @@ cc_library {
 
     host_supported: true,
 
+    static_ndk_lib: true,
+    vendor_available: true,
+    vndk: {
+        enabled: true,
+        support_system_process: true,
+    },
+
     cflags: [
         "-O3",
         "-DUSE_MMAP",
